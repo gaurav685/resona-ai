@@ -1,0 +1,36 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+
+# Backend runtime artifacts
+apps/api/*.db
+*.db
+
+# Node / Next.js
+node_modules/
+.next/
+apps/web/.next/
+apps/web/out/
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+
+# ML artifacts
+models/*.pt
+models/*.pkl
+models/*.joblib
+data/raw/**
+data/processed/**
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
