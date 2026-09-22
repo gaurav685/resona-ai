@@ -34,3 +34,6 @@ data/processed/**
 Thumbs.db
 .vscode/
 .idea/
+
+# Claude Code local harness state
+.claude/

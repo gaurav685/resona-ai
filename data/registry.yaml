@@ -1,0 +1,119 @@
+# Resona AI — dataset registry
+# Every field below was verified against the actual source (API metadata or
+# HTTP HEAD/GET on the official page) on 2026-09-23. Unknown fields are
+# marked `unknown` rather than guessed.
+
+datasets:
+  - name: beyond_big_five
+    display_name: "Beyond the Big Five Personality Traits for Music Recommendation Systems"
+    source_url: "https://figshare.com/articles/dataset/Beyond_the_Big_Five_Personality_Traits_for_Music_Recommendation_Systems_-_dataset/19678962"
+    download_url: "https://ndownloader.figshare.com/files/34951743"
+    doi: "10.6084/m9.figshare.19678962.v1"
+    license: "CC BY 4.0"
+    license_url: "https://creativecommons.org/licenses/by/4.0/"
+    citation: >
+      Kleć, Mariusz; Wieczorkowska, Alicja; Strus, Włodzimierz; Szklanny, Krzysztof (2023):
+      Beyond the Big Five Personality Traits for Music Recommendation Systems - dataset.
+      Figshare. Dataset. https://doi.org/10.6084/m9.figshare.19678962.v1
+    approximate_size: "4.6 MB"
+    expected_files:
+      - PER_dataset.xls
+    checksum:
+      algorithm: md5
+      value: "a00a4b43687f44932627f1a59a1b25b7"
+      source: "figshare API (computed_md5, verified)"
+    download_method: direct_http
+    authentication_required: false
+    commercial_use: true
+    intended_use: "Big Five / BFI-2 personality trait modeling and personality-music relationships."
+    subset_used: "Full file used as-is (single ~5,278-row Excel sheet, 279 participants)."
+
+  - name: lastfm_1k
+    display_name: "Last.fm Dataset - 1K users"
+    source_url: "http://ocelma.net/MusicRecommendationDataset/lastfm-1K.html"
+    download_url: "http://mtg.upf.edu/static/datasets/last.fm/lastfm-dataset-1K.tar.gz"
+    doi: unknown
+    license: "Distributed with permission of Last.fm. Non-commercial use only."
+    license_url: unknown
+    citation: >
+      Celma, O. (2010). Music Recommendation and Discovery in the Long Tail.
+      PhD Thesis, Universitat Pompeu Fabra, Barcelona, Spain.
+    approximate_size: "672,741,554 bytes (~642 MiB) compressed .tar.gz, verified via HTTP Content-Length"
+    expected_files:
+      - userid-profile.tsv
+      - userid-timestamp-artid-artname-traid-traname.tsv
+    checksum:
+      algorithm: unknown
+      value: unknown
+      source: "not published by source"
+    download_method: direct_http
+    authentication_required: false
+    commercial_use: false
+    intended_use: "Listening behavior, temporal patterns, behavioral clustering for persona discovery."
+    subset_used: >
+      Raw archive kept in full (only official distribution format). The large
+      listening-events member is streamed directly from the tar.gz (never
+      fully extracted to disk) and only the first 200,000 event rows are
+      materialized into data/processed for the college-MVP scope. The small
+      userid-profile.tsv member is extracted and used in full.
+
+  - name: million_song_dataset
+    display_name: "Million Song Dataset — metadata subset"
+    source_url: "http://millionsongdataset.com/pages/getting-dataset/"
+    download_url: "http://millionsongdataset.com/sites/default/files/AdditionalFiles/unique_tracks.txt"
+    secondary_download_url: "http://millionsongdataset.com/sites/default/files/AdditionalFiles/artist_location.txt"
+    doi: unknown
+    license: "Metadata released by The Echo Nest / LabROSA for research use; see millionsongdataset.com terms."
+    license_url: "http://millionsongdataset.com/pages/terms-use/"
+    citation: >
+      Bertin-Mahieux, T., Ellis, D. P. W., Whitman, B., & Lamere, P. (2011).
+      The Million Song Dataset. Proceedings of the 12th International Society
+      for Music Information Retrieval Conference (ISMIR 2011).
+    approximate_size: "unique_tracks.txt ~84 MB; artist_location.txt ~1.1 MB (verified via HTTP Content-Length)"
+    expected_files:
+      - unique_tracks.txt
+      - artist_location.txt
+    checksum:
+      algorithm: unknown
+      value: unknown
+      source: "not published by source"
+    download_method: direct_http
+    authentication_required: false
+    commercial_use: unknown
+    intended_use: "Track/artist metadata (track_id, song_id, artist_name, title, artist location)."
+    subset_used: >
+      Text metadata files only — NOT the audio-feature subset (millionsongsubset.tar.gz,
+      1.8 GB) or the full track_metadata.db (746 MB), both skipped as unnecessary
+      for the MVP scope. Consequence: MSD contributes Track/Artist identity
+      metadata only. No tempo/energy/valence audio features are available from
+      MSD in this MVP — those Track fields stay null unless populated by
+      another source; they are never fabricated.
+
+  - name: deam
+    display_name: "DEAM — MediaEval Database for Emotional Analysis in Music"
+    source_url: "https://cvml.unige.ch/databases/DEAM/"
+    download_url: "https://cvml.unige.ch/databases/DEAM/DEAM_Annotations.zip"
+    secondary_download_url: "https://cvml.unige.ch/databases/DEAM/metadata.zip"
+    doi: unknown
+    license: "Annotations: research use per DEAM manual. Audio (not downloaded): mixed Creative Commons per-track."
+    license_url: "https://cvml.unige.ch/databases/DEAM/manual.pdf"
+    citation: >
+      Aljanaki, A., Yang, Y.-H., & Soleymani, M. (2017). Developing a benchmark
+      for emotional analysis of music. PLOS ONE, 12(3), e0173392.
+    approximate_size: "DEAM_Annotations.zip ~4.7 MB; metadata.zip ~0.34 MB (verified via HTTP Content-Length)"
+    expected_files:
+      - DEAM_Annotations.zip
+      - metadata.zip
+    checksum:
+      algorithm: unknown
+      value: unknown
+      source: "not published by source"
+    download_method: direct_http
+    authentication_required: false
+    commercial_use: false
+    intended_use: "Valence/arousal emotion annotations for listening context/mood detection."
+    subset_used: >
+      Annotations + metadata only. DEAM_audio.zip (1.3 GB) and features.zip
+      (601 MB, openSMILE audio features) were deliberately not downloaded —
+      not required since this MVP only needs the valence/arousal labels, not
+      raw audio or low-level audio descriptors.
