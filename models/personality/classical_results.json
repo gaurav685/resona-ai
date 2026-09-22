@@ -1,0 +1,191 @@
+{
+  "dataset": "beyond_big_five",
+  "n_participants": 279,
+  "n_features": 32,
+  "feature_columns": [
+    "rms",
+    "lowenergy",
+    "eventdensity",
+    "pulseclarity",
+    "attacktime_mean",
+    "attacktime_std",
+    "attacktime_slope",
+    "attacktime_periodentropy",
+    "attackslope_mean",
+    "attackslope_std",
+    "attackslope_slope",
+    "attackslope_periodentropy",
+    "zerocross",
+    "brightness",
+    "centroid",
+    "spread",
+    "skewness",
+    "kurtosis",
+    "flatness",
+    "mirentropy",
+    "inharmonicity",
+    "activity",
+    "valence",
+    "tension",
+    "happy",
+    "sad",
+    "tender",
+    "anger",
+    "fear",
+    "Q1",
+    "Q2",
+    "Q3"
+  ],
+  "trait_columns": [
+    "Openness",
+    "Conscientiousness",
+    "Extraversion",
+    "Agreeableness",
+    "Neuroticism"
+  ],
+  "test_size": 0.2,
+  "random_seed": 42,
+  "results": {
+    "linear_regression": {
+      "per_trait": {
+        "Openness": {
+          "mae": 0.48615157636559275,
+          "rmse": 0.6093424990484292,
+          "r2": -0.06684204058930554,
+          "pearson": -0.0182665683021871,
+          "spearman": -0.049645714635345124
+        },
+        "Conscientiousness": {
+          "mae": 0.8017167770608131,
+          "rmse": 0.9460905269605393,
+          "r2": -0.06783935825560028,
+          "pearson": -0.04356070194514728,
+          "spearman": -0.0688935960081361
+        },
+        "Extraversion": {
+          "mae": 0.595269123128662,
+          "rmse": 0.7176005800458229,
+          "r2": 0.008038935812115788,
+          "pearson": 0.12215683244064202,
+          "spearman": 0.1636501539264681
+        },
+        "Agreeableness": {
+          "mae": 0.45846734463173316,
+          "rmse": 0.6055207723336831,
+          "r2": -0.01697488354718013,
+          "pearson": 0.04166681382780064,
+          "spearman": 0.05239557285693517
+        },
+        "Neuroticism": {
+          "mae": 0.7451998145279285,
+          "rmse": 0.9005595960067511,
+          "r2": -0.08818056126125984,
+          "pearson": -0.09185397324388428,
+          "spearman": -0.11318765039348126
+        }
+      },
+      "average": {
+        "mae": 0.6173609271429459,
+        "rmse": 0.7558227948790451,
+        "r2": -0.046359581568246
+      },
+      "cv_5fold_mae_mean": 0.5700725124854825,
+      "cv_5fold_mae_std": 0.03941603455546149,
+      "train_time_sec": 0.011903762817382812
+    },
+    "random_forest": {
+      "per_trait": {
+        "Openness": {
+          "mae": 0.4937064555630482,
+          "rmse": 0.6029674510823236,
+          "r2": -0.04463583741161936,
+          "pearson": 0.06588837638240257,
+          "spearman": 0.06806598668625248
+        },
+        "Conscientiousness": {
+          "mae": 0.7948888619225151,
+          "rmse": 0.9500774320898933,
+          "r2": -0.07685825139501334,
+          "pearson": -0.0679984367438721,
+          "spearman": -0.09558858104854652
+        },
+        "Extraversion": {
+          "mae": 0.6082657482258931,
+          "rmse": 0.7501310914470354,
+          "r2": -0.08393539150819618,
+          "pearson": -0.06639375695216167,
+          "spearman": -0.08033672620099248
+        },
+        "Agreeableness": {
+          "mae": 0.45180015650939137,
+          "rmse": 0.5849553528111743,
+          "r2": 0.05093146812571703,
+          "pearson": 0.23612882677638145,
+          "spearman": 0.18132977665194233
+        },
+        "Neuroticism": {
+          "mae": 0.7257252267375984,
+          "rmse": 0.8988249767386624,
+          "r2": -0.08399258505122242,
+          "pearson": 0.0004136543306761569,
+          "spearman": -0.03309720530102703
+        }
+      },
+      "average": {
+        "mae": 0.6148772897916892,
+        "rmse": 0.7573912608338178,
+        "r2": -0.04769811944806686
+      },
+      "cv_5fold_mae_mean": 0.5699901248510624,
+      "cv_5fold_mae_std": 0.031068299961989943,
+      "train_time_sec": 4.049075126647949
+    },
+    "xgboost": {
+      "per_trait": {
+        "Openness": {
+          "mae": 0.5280074690069471,
+          "rmse": 0.6555385927671817,
+          "r2": -0.2347348656795345,
+          "pearson": 0.01565026466257733,
+          "spearman": 0.037285643612338513
+        },
+        "Conscientiousness": {
+          "mae": 0.7890871521972473,
+          "rmse": 0.9629711351025713,
+          "r2": -0.10628512977925819,
+          "pearson": 0.0635008924699648,
+          "spearman": 0.008761430987621879
+        },
+        "Extraversion": {
+          "mae": 0.6187831504004342,
+          "rmse": 0.7756693081857777,
+          "r2": -0.1589969118137724,
+          "pearson": -0.005592439551906173,
+          "spearman": 0.0009580188814428406
+        },
+        "Agreeableness": {
+          "mae": 0.465813486349015,
+          "rmse": 0.6037831017728521,
+          "r2": -0.011146407413061388,
+          "pearson": 0.19498064808200474,
+          "spearman": 0.1942745652401263
+        },
+        "Neuroticism": {
+          "mae": 0.7790119718937646,
+          "rmse": 0.9556027399075377,
+          "r2": -0.22526723366514934,
+          "pearson": 0.04583714966539141,
+          "spearman": -0.015230875241941081
+        }
+      },
+      "average": {
+        "mae": 0.6361406459694816,
+        "rmse": 0.7907129755471841,
+        "r2": -0.14728610967015515
+      },
+      "cv_5fold_mae_mean": 0.6127566885771575,
+      "cv_5fold_mae_std": 0.02687868078952215,
+      "train_time_sec": 1.0471372604370117
+    }
+  }
+}

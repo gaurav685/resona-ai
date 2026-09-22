@@ -20,10 +20,12 @@ npm-debug.log*
 .env
 .env.local
 
-# ML artifacts
-models/*.pt
-models/*.pkl
-models/*.joblib
+# ML artifacts — binary weights are gitignored (reproducible via ml/ scripts);
+# evaluation JSON/CSV metadata under models/ is small and kept for grading/
+# reproducibility (see MODEL_CARD.md).
+models/**/*.pt
+models/**/*.pkl
+models/**/*.joblib
 data/raw/**
 data/processed/**
 !data/raw/.gitkeep

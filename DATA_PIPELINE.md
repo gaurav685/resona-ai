@@ -43,17 +43,20 @@ Canonical target schemas: `ml/data/schemas.py` (see
 - The large listening-events member
   (`userid-timestamp-artid-artname-traid-traname.tsv`) is **never fully
   extracted to disk**. It's read as a stream directly from the open tar
-  member (`tarfile.extractfile`), line by line, and capped at the first
-  200,000 parsed rows — a deliberate manageable subset for the college-MVP
-  scope (see `data/registry.yaml` for the full rationale).
+  member (`tarfile.extractfile`), line by line, and capped at 300 events
+  per user — a deliberate manageable subset for the college-MVP scope that
+  still covers all 992 users (a first-200,000-rows cap was tried first but
+  only covered 8 users, since the source file is sorted by user; see
+  `data/registry.yaml` for the full rationale).
 - Timestamps are parsed and validated per `ml/data/schemas.py`; rows with
   unparseable timestamps or the wrong tab-separated field count are
   dropped and counted (reported by the script, not silently discarded).
 - Sessionization: events are grouped per user into sessions using a
   30-minute inactivity-gap rule (a listening event starts a new session if
   more than 30 minutes have passed since the user's previous event).
-- Output: `data/processed/lastfm_1k/users.csv`,
-  `data/processed/lastfm_1k/listening_events.csv`.
+- Output: `data/processed/lastfm_1k/users.csv` (992 rows),
+  `data/processed/lastfm_1k/listening_events.csv` (288,965 rows, all 992
+  users represented).
 
 ### million_song_dataset
 

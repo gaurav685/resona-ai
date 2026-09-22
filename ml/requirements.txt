@@ -5,3 +5,14 @@ requests==2.32.3
 tqdm==4.66.5
 xlrd==2.0.1
 pydantic==2.9.2
+scikit-learn==1.5.2
+xgboost==2.1.1
+shap==0.46.0
+joblib==1.4.2
+scipy==1.13.1
+
+# torch installed separately with a CUDA-specific index URL, not plain PyPI:
+#   pip install torch --index-url https://download.pytorch.org/whl/cu126
+# (installed here: torch==2.14.0+cu126 — see MODEL_CARD.md for the GPU this
+# was verified against)
+

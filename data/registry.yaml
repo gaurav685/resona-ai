@@ -53,9 +53,12 @@ datasets:
     subset_used: >
       Raw archive kept in full (only official distribution format). The large
       listening-events member is streamed directly from the tar.gz (never
-      fully extracted to disk) and only the first 200,000 event rows are
-      materialized into data/processed for the college-MVP scope. The small
-      userid-profile.tsv member is extracted and used in full.
+      fully extracted to disk) and capped at 300 events per user so every
+      one of the 992 users contributes data (an earlier "first 200,000 rows"
+      approach only covered 8 heavy-listening users, since the source file
+      is sorted by user — corrected in Phase 3 for persona clustering to
+      have real cross-user diversity). Result: 288,965 event rows across all
+      992 users. The small userid-profile.tsv member is extracted in full.
 
   - name: million_song_dataset
     display_name: "Million Song Dataset — metadata subset"

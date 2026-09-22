@@ -1,0 +1,147 @@
+{
+  "algorithm": "KMeans",
+  "k_selected": 3,
+  "k_scan_scores": {
+    "2": {
+      "silhouette": 0.22681192866278502,
+      "davies_bouldin": 1.5584975747220176
+    },
+    "3": {
+      "silhouette": 0.23931904426565603,
+      "davies_bouldin": 1.2067434523268898
+    },
+    "4": {
+      "silhouette": 0.2233355493958051,
+      "davies_bouldin": 1.29469730935309
+    },
+    "5": {
+      "silhouette": 0.19528358083311304,
+      "davies_bouldin": 1.4140551425614158
+    },
+    "6": {
+      "silhouette": 0.1953256453625506,
+      "davies_bouldin": 1.3158370795785983
+    },
+    "7": {
+      "silhouette": 0.19914875538551458,
+      "davies_bouldin": 1.3301376164607552
+    },
+    "8": {
+      "silhouette": 0.18585770671123836,
+      "davies_bouldin": 1.3642620435961335
+    }
+  },
+  "silhouette_score": 0.23931904426565603,
+  "davies_bouldin_score": 1.2067434523268898,
+  "dbscan_comparison": {
+    "n_clusters": 1,
+    "n_noise": 106,
+    "eps": 1.5,
+    "min_samples": 5
+  },
+  "pca_explained_variance_ratio": [
+    0.36554097347008363,
+    0.2559359555524626
+  ],
+  "feature_columns": [
+    "listening_frequency",
+    "average_session_duration_min",
+    "tracks_per_session",
+    "replay_rate",
+    "repeat_rate",
+    "artist_diversity",
+    "artist_concentration",
+    "discovery_rate",
+    "night_listening_ratio_utc",
+    "weekend_listening_ratio_utc"
+  ],
+  "n_users_clustered": 983,
+  "min_events_threshold": 20,
+  "random_seed": 42,
+  "cluster_profiles": {
+    "0": {
+      "name": "High Replay Rate / Low Artist Diversity",
+      "n_users": 444,
+      "feature_means": {
+        "listening_frequency": 23.365631343220787,
+        "average_session_duration_min": 71.21425003112668,
+        "tracks_per_session": 17.685960121004847,
+        "replay_rate": 0.4290694715967796,
+        "repeat_rate": 0.3465419556885375,
+        "artist_diversity": 0.15302480627536316,
+        "artist_concentration": 0.1358302292225106,
+        "discovery_rate": 0.15302480627536316,
+        "night_listening_ratio_utc": 0.23685519697280275,
+        "weekend_listening_ratio_utc": 0.2627110760547358
+      },
+      "feature_z_scores_vs_global": {
+        "listening_frequency": -0.05565914044184649,
+        "average_session_duration_min": -0.10398376515311546,
+        "tracks_per_session": -0.09163110755508785,
+        "replay_rate": 0.7962113573707731,
+        "repeat_rate": 0.7412629868478308,
+        "artist_diversity": -0.7576113080271875,
+        "artist_concentration": 0.544898066396356,
+        "discovery_rate": -0.7576113080271875,
+        "night_listening_ratio_utc": -0.08041388629133557,
+        "weekend_listening_ratio_utc": -0.013619158941190675
+      }
+    },
+    "1": {
+      "name": "Low Replay Rate / Low Repeat Rate",
+      "n_users": 527,
+      "feature_means": {
+        "listening_frequency": 22.1493598625504,
+        "average_session_duration_min": 74.89680249180667,
+        "tracks_per_session": 17.959463891002653,
+        "replay_rate": 0.13712813825108597,
+        "repeat_rate": 0.11249151593050177,
+        "artist_diversity": 0.42352951275078216,
+        "artist_concentration": 0.03276997602009012,
+        "discovery_rate": 0.42352951275078216,
+        "night_listening_ratio_utc": 0.26898049763560755,
+        "weekend_listening_ratio_utc": 0.2652961904597082
+      },
+      "feature_z_scores_vs_global": {
+        "listening_frequency": -0.08050228781366861,
+        "average_session_duration_min": -0.0747182619496446,
+        "tracks_per_session": -0.08244532022235676,
+        "replay_rate": -0.6485729456257009,
+        "repeat_rate": -0.6049500377002967,
+        "artist_diversity": 0.6024304583642428,
+        "artist_concentration": -0.4583580712552294,
+        "discovery_rate": 0.6024304583642428,
+        "night_listening_ratio_utc": 0.06125883254088524,
+        "weekend_listening_ratio_utc": -0.0011692399105685406
+      }
+    },
+    "2": {
+      "name": "High Average Session Duration Min / High Tracks Per Session",
+      "n_users": 12,
+      "feature_means": {
+        "listening_frequency": 300.0,
+        "average_session_duration_min": 981.3307870370369,
+        "tracks_per_session": 229.16666666666666,
+        "replay_rate": 0.07083333333333333,
+        "repeat_rate": 0.06826344858123169,
+        "artist_diversity": 0.6169444444444445,
+        "artist_concentration": 0.07660185185185184,
+        "discovery_rate": 0.6169444444444445,
+        "night_listening_ratio_utc": 0.31972222222222224,
+        "weekend_listening_ratio_utc": 0.38083333333333336
+      },
+      "feature_z_scores_vs_global": {
+        "listening_frequency": 5.594780336165266,
+        "average_session_duration_min": 7.1287763146204925,
+        "tracks_per_session": 7.011074625970073,
+        "replay_rate": -0.9766583606565536,
+        "repeat_rate": -0.8593413576983824,
+        "artist_diversity": 1.5748807671762644,
+        "artist_concentration": -0.03166982737301526,
+        "discovery_rate": 1.5748807671762644,
+        "night_listening_ratio_utc": 0.2850300636921835,
+        "weekend_listening_ratio_utc": 0.5552580002298608
+      }
+    }
+  }
+}

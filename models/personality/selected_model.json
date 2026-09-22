@@ -1,0 +1,185 @@
+{
+  "model_type": "random_forest",
+  "model_version": "random_forest-v1",
+  "artifact_file": "random_forest.joblib",
+  "feature_columns": [
+    "rms",
+    "lowenergy",
+    "eventdensity",
+    "pulseclarity",
+    "attacktime_mean",
+    "attacktime_std",
+    "attacktime_slope",
+    "attacktime_periodentropy",
+    "attackslope_mean",
+    "attackslope_std",
+    "attackslope_slope",
+    "attackslope_periodentropy",
+    "zerocross",
+    "brightness",
+    "centroid",
+    "spread",
+    "skewness",
+    "kurtosis",
+    "flatness",
+    "mirentropy",
+    "inharmonicity",
+    "activity",
+    "valence",
+    "tension",
+    "happy",
+    "sad",
+    "tender",
+    "anger",
+    "fear",
+    "Q1",
+    "Q2",
+    "Q3"
+  ],
+  "trait_columns": [
+    "Openness",
+    "Conscientiousness",
+    "Extraversion",
+    "Agreeableness",
+    "Neuroticism"
+  ],
+  "global_feature_importance": [
+    {
+      "feature": "Q3",
+      "importance": 0.04422137974055855
+    },
+    {
+      "feature": "Q2",
+      "importance": 0.029986460765154287
+    },
+    {
+      "feature": "sad",
+      "importance": 0.027399390880741382
+    },
+    {
+      "feature": "Q1",
+      "importance": 0.025314048489714122
+    },
+    {
+      "feature": "kurtosis",
+      "importance": 0.02503585437833593
+    },
+    {
+      "feature": "attacktime_slope",
+      "importance": 0.02414897526726827
+    },
+    {
+      "feature": "attacktime_std",
+      "importance": 0.021970065495016552
+    },
+    {
+      "feature": "inharmonicity",
+      "importance": 0.02152221952607427
+    },
+    {
+      "feature": "attackslope_slope",
+      "importance": 0.02004575153330739
+    },
+    {
+      "feature": "eventdensity",
+      "importance": 0.019285989471539002
+    },
+    {
+      "feature": "brightness",
+      "importance": 0.016543417551030122
+    },
+    {
+      "feature": "attackslope_periodentropy",
+      "importance": 0.016334538990909066
+    },
+    {
+      "feature": "attacktime_mean",
+      "importance": 0.015435834137198436
+    },
+    {
+      "feature": "lowenergy",
+      "importance": 0.014853105286789786
+    },
+    {
+      "feature": "rms",
+      "importance": 0.014246751028786617
+    },
+    {
+      "feature": "tender",
+      "importance": 0.014187307041050397
+    },
+    {
+      "feature": "anger",
+      "importance": 0.013593022111440832
+    },
+    {
+      "feature": "happy",
+      "importance": 0.012428463329697834
+    },
+    {
+      "feature": "attackslope_mean",
+      "importance": 0.012268036621004395
+    },
+    {
+      "feature": "attacktime_periodentropy",
+      "importance": 0.011591847558307484
+    },
+    {
+      "feature": "activity",
+      "importance": 0.011391072383100952
+    },
+    {
+      "feature": "attackslope_std",
+      "importance": 0.010520925195072726
+    },
+    {
+      "feature": "zerocross",
+      "importance": 0.010075761329204083
+    },
+    {
+      "feature": "pulseclarity",
+      "importance": 0.009769607011706639
+    },
+    {
+      "feature": "spread",
+      "importance": 0.009459007209891313
+    },
+    {
+      "feature": "fear",
+      "importance": 0.009095020752629208
+    },
+    {
+      "feature": "skewness",
+      "importance": 0.008714678032158942
+    },
+    {
+      "feature": "tension",
+      "importance": 0.008191701432186055
+    },
+    {
+      "feature": "centroid",
+      "importance": 0.007366804419419889
+    },
+    {
+      "feature": "valence",
+      "importance": 0.007266647333267575
+    },
+    {
+      "feature": "flatness",
+      "importance": 0.005780935502577684
+    },
+    {
+      "feature": "mirentropy",
+      "importance": 0.005780193712948359
+    }
+  ],
+  "global_feature_importance_method": "shap_tree_explainer_mean_abs",
+  "selection_metric": "test_avg_mae",
+  "selection_value": 0.6148772897916892,
+  "all_candidate_scores": {
+    "linear_regression": 0.6173609271429459,
+    "random_forest": 0.6148772897916892,
+    "xgboost": 0.6361406459694816,
+    "pytorch_nn": 0.6434033155441284
+  }
+}

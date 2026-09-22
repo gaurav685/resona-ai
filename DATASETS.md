@@ -39,10 +39,11 @@ data/
 - **Download:** direct HTTP, no authentication.
 - **Subset used:** full user-profile file (992 users); listening-events
   file streamed directly from the compressed archive (never fully
-  extracted — it's several GB uncompressed) and capped at the first
-  200,000 parsed rows.
+  extracted — it's several GB uncompressed), capped at 300 events per user
+  so every user contributes data for persona clustering.
 - **Processed output:** `data/processed/lastfm_1k/users.csv` (992 rows),
-  `data/processed/lastfm_1k/listening_events.csv` (200,000 rows, sessionized).
+  `data/processed/lastfm_1k/listening_events.csv` (288,965 rows across all
+  992 users, sessionized).
 
 ### 3. Million Song Dataset — metadata subset
 

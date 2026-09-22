@@ -37,7 +37,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = REPO_ROOT / "data" / "raw"
 PROCESSED_DIR = REPO_ROOT / "data" / "processed"
 
-LASTFM_EVENT_SAMPLE_ROWS = 200_000
+LASTFM_EVENTS_PER_USER = 300
 MSD_TRACK_SAMPLE_ROWS = 20_000
 SESSION_GAP_MINUTES = 30
 
@@ -301,13 +301,20 @@ def process_lastfm() -> None:
         # --- listening events: streamed from the tar member, never fully
         # extracted to disk. Column layout per source docs:
         # userid, timestamp, artist-mbid, artist-name, track-mbid, track-name
+        #
+        # The source file is sorted by user, so a naive "first N rows" cap
+        # (used in an earlier version of this script) only ever captured a
+        # handful of the heaviest-listening users. To get behavioral
+        # diversity across the user base (needed for persona clustering in
+        # Phase 3), we instead cap each user at LASTFM_EVENTS_PER_USER
+        # events, scanning the full stream once so every user gets a
+        # chance to contribute rows.
         with tar.extractfile(events_name) as f:
             rows = []
             malformed = 0
             bad_ts = 0
-            for i, raw_line in enumerate(f):
-                if len(rows) >= LASTFM_EVENT_SAMPLE_ROWS:
-                    break
+            user_counts: dict[str, int] = {}
+            for raw_line in f:
                 try:
                     line = raw_line.decode("utf-8", errors="replace").rstrip("\n")
                 except Exception:
@@ -318,10 +325,13 @@ def process_lastfm() -> None:
                     malformed += 1
                     continue
                 user_id, ts, _artist_mbid, artist_name, _track_mbid, track_name = parts
+                if user_counts.get(user_id, 0) >= LASTFM_EVENTS_PER_USER:
+                    continue
                 played_at = parse_timestamp(ts)
                 if played_at is None:
                     bad_ts += 1
                     continue
+                user_counts[user_id] = user_counts.get(user_id, 0) + 1
                 rows.append(
                     {
                         "event_id": hashlib.md5(f"{user_id}|{ts}|{track_name}".encode()).hexdigest(),
@@ -333,7 +343,8 @@ def process_lastfm() -> None:
                     }
                 )
 
-    print(f"  streamed {len(rows):,} rows from source (sample cap {LASTFM_EVENT_SAMPLE_ROWS:,}), "
+    print(f"  streamed {len(rows):,} rows from source (cap {LASTFM_EVENTS_PER_USER}/user), "
+          f"covering {len(user_counts):,} distinct users, "
           f"{malformed} malformed, {bad_ts} unparseable timestamps")
 
     events_df = pd.DataFrame(rows)

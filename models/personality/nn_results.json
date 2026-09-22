@@ -1,0 +1,235 @@
+{
+  "model_name": "pytorch_nn",
+  "architecture": "Linear(32->64)-ReLU-Dropout-Linear(64->32)-ReLU-Dropout-Linear(32->5)",
+  "dataset_version": "beyond_big_five (data/raw/beyond_big_five/PER_dataset.xls, 279 participants)",
+  "feature_version": "ml/personality/dataset.py FEATURE_COLUMNS v1 (32 features)",
+  "device": "cuda",
+  "gpu_name": "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+  "cuda_available": true,
+  "pytorch_version": "2.14.0+cu126",
+  "cuda_version": "12.6",
+  "epochs_requested": 100,
+  "epochs_completed": 88,
+  "batch_size": 16,
+  "learning_rate": 0.001,
+  "patience": 10,
+  "random_seed": 42,
+  "best_epoch": 78,
+  "best_val_loss": 0.5653219819068909,
+  "final_metrics": {
+    "per_trait": {
+      "Openness": {
+        "mae": 0.5224093794822693,
+        "rmse": 0.6492581963539124,
+        "r2": -0.2111893892288208,
+        "pearson": 0.2201755726539765,
+        "spearman": 0.2949982602056094
+      },
+      "Conscientiousness": {
+        "mae": 0.7682909369468689,
+        "rmse": 0.9601240158081055,
+        "r2": -0.09975302219390869,
+        "pearson": 0.0745929416587679,
+        "spearman": 0.12495306459299796
+      },
+      "Extraversion": {
+        "mae": 0.6815640330314636,
+        "rmse": 0.8070595860481262,
+        "r2": -0.25470101833343506,
+        "pearson": -0.024715811709817632,
+        "spearman": -0.04738771967136908
+      },
+      "Agreeableness": {
+        "mae": 0.529928982257843,
+        "rmse": 0.7375863194465637,
+        "r2": -0.5089603662490845,
+        "pearson": -0.05838522076600412,
+        "spearman": -0.005547766537793136
+      },
+      "Neuroticism": {
+        "mae": 0.7148232460021973,
+        "rmse": 0.8745979070663452,
+        "r2": -0.026343941688537598,
+        "pearson": 0.20092797161226547,
+        "spearman": 0.1922512949078271
+      }
+    },
+    "average": {
+      "mae": 0.6434033155441284,
+      "rmse": 0.8057252049446106,
+      "r2": -0.22018954753875733
+    }
+  },
+  "training_duration_sec": 3.93696928024292,
+  "feature_columns": [
+    "rms",
+    "lowenergy",
+    "eventdensity",
+    "pulseclarity",
+    "attacktime_mean",
+    "attacktime_std",
+    "attacktime_slope",
+    "attacktime_periodentropy",
+    "attackslope_mean",
+    "attackslope_std",
+    "attackslope_slope",
+    "attackslope_periodentropy",
+    "zerocross",
+    "brightness",
+    "centroid",
+    "spread",
+    "skewness",
+    "kurtosis",
+    "flatness",
+    "mirentropy",
+    "inharmonicity",
+    "activity",
+    "valence",
+    "tension",
+    "happy",
+    "sad",
+    "tender",
+    "anger",
+    "fear",
+    "Q1",
+    "Q2",
+    "Q3"
+  ],
+  "trait_columns": [
+    "Openness",
+    "Conscientiousness",
+    "Extraversion",
+    "Agreeableness",
+    "Neuroticism"
+  ],
+  "permutation_feature_importance": [
+    {
+      "feature": "brightness",
+      "importance": 0.04124603271484373
+    },
+    {
+      "feature": "Q2",
+      "importance": 0.036271846294403054
+    },
+    {
+      "feature": "flatness",
+      "importance": 0.02302793264389036
+    },
+    {
+      "feature": "valence",
+      "importance": 0.019606685638427712
+    },
+    {
+      "feature": "zerocross",
+      "importance": 0.019141113758087136
+    },
+    {
+      "feature": "tender",
+      "importance": 0.018950378894805886
+    },
+    {
+      "feature": "rms",
+      "importance": 0.018062448501586892
+    },
+    {
+      "feature": "anger",
+      "importance": 0.015310859680175759
+    },
+    {
+      "feature": "attacktime_mean",
+      "importance": 0.013421809673309304
+    },
+    {
+      "feature": "mirentropy",
+      "importance": 0.013098812103271462
+    },
+    {
+      "feature": "centroid",
+      "importance": 0.011903142929077126
+    },
+    {
+      "feature": "attackslope_mean",
+      "importance": 0.009466743469238259
+    },
+    {
+      "feature": "kurtosis",
+      "importance": 0.008041954040527322
+    },
+    {
+      "feature": "activity",
+      "importance": 0.004555797576904275
+    },
+    {
+      "feature": "spread",
+      "importance": 0.0032578468322753684
+    },
+    {
+      "feature": "attackslope_periodentropy",
+      "importance": 0.0019426107406615989
+    },
+    {
+      "feature": "inharmonicity",
+      "importance": 0.001921272277832009
+    },
+    {
+      "feature": "fear",
+      "importance": 0.001091039180755593
+    },
+    {
+      "feature": "skewness",
+      "importance": 0.001066303253173806
+    },
+    {
+      "feature": "attackslope_std",
+      "importance": 0.0009190797805785911
+    },
+    {
+      "feature": "tension",
+      "importance": 0.0005320668220519797
+    },
+    {
+      "feature": "attacktime_periodentropy",
+      "importance": 0.00022879838943479225
+    },
+    {
+      "feature": "Q3",
+      "importance": -0.00023838281631471947
+    },
+    {
+      "feature": "Q1",
+      "importance": -0.0010971665382385476
+    },
+    {
+      "feature": "happy",
+      "importance": -0.001197004318237327
+    },
+    {
+      "feature": "attackslope_slope",
+      "importance": -0.001878643035888694
+    },
+    {
+      "feature": "sad",
+      "importance": -0.0027829051017761453
+    },
+    {
+      "feature": "attacktime_std",
+      "importance": -0.00380518436431887
+    },
+    {
+      "feature": "attacktime_slope",
+      "importance": -0.0038320064544677956
+    },
+    {
+      "feature": "lowenergy",
+      "importance": -0.005675220489501975
+    },
+    {
+      "feature": "pulseclarity",
+      "importance": -0.005719566345214866
+    },
+    {
+      "feature": "eventdensity",
+      "importance": -0.008068346977233909
+    }
+  ]
+}
