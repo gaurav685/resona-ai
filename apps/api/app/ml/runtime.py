@@ -21,9 +21,11 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(REPO_ROOT / "ml"))
 
 from features.listening_dna import compute_listening_dna  # noqa: E402
+from features.context import compute_current_context  # noqa: E402
 
 MODELS_PERSONALITY_DIR = REPO_ROOT / "models" / "personality"
 MODELS_PERSONAS_DIR = REPO_ROOT / "models" / "personas"
+MODELS_RECOMMENDATION_DIR = REPO_ROOT / "models" / "recommendation"
 LASTFM_EVENTS_PATH = REPO_ROOT / "data" / "processed" / "lastfm_1k" / "listening_events.csv"
 
 
@@ -52,6 +54,14 @@ def get_listening_dna(user_id: str) -> dict:
         raise ArtifactUnavailable(f"unknown user_id: {user_id}")
     dna = compute_listening_dna(events, user_id)
     return dna.to_dict()
+
+
+def get_current_context(user_id: str) -> dict:
+    events = get_listening_events_df()
+    if user_id not in set(events["user_id"].unique()):
+        raise ArtifactUnavailable(f"unknown user_id: {user_id}")
+    result = compute_current_context(events, user_id)
+    return result.to_dict()
 
 
 @lru_cache(maxsize=1)
@@ -181,3 +191,66 @@ def predict_personality(features: dict[str, float]) -> dict:
         "predictions": results,
         "disclaimer": "Model-estimated associations, not a psychological diagnosis.",
     }
+
+
+# ---------------------------------------------------------------------------
+# Phase 4: content similarity + hybrid recommender
+# ---------------------------------------------------------------------------
+
+@lru_cache(maxsize=1)
+def _content_similarity_artifacts() -> dict:
+    sim_path = MODELS_RECOMMENDATION_DIR / "content_similarity_matrix.npy"
+    catalog_path = MODELS_RECOMMENDATION_DIR / "content_track_catalog.csv"
+    index_path = MODELS_RECOMMENDATION_DIR / "content_similarity_index.joblib"
+    if not (sim_path.exists() and catalog_path.exists() and index_path.exists()):
+        raise ArtifactUnavailable(
+            f"content similarity artifacts not found — run ml/recommendation/content_similarity.py"
+        )
+    sim = np.load(sim_path)
+    catalog = pd.read_csv(catalog_path)
+    index = joblib.load(index_path)
+    track_ids = index["track_ids"]
+    return {"sim": sim, "catalog": catalog, "track_ids": track_ids, "track_idx": {t: i for i, t in enumerate(track_ids)}}
+
+
+def get_similar_tracks(track_id: str, limit: int = 10) -> dict:
+    art = _content_similarity_artifacts()
+    if track_id not in art["track_idx"]:
+        raise ArtifactUnavailable(
+            f"unknown track_id: {track_id} (this catalog is the 745-track beyond_big_five "
+            f"audio-feature set, not Last.fm or MSD track ids — see MODEL_CARD.md)"
+        )
+    idx = art["track_idx"][track_id]
+    sims = art["sim"][idx]
+    top_idx = np.argsort(sims)[::-1][:limit]
+    results = [
+        {"track_id": art["track_ids"][i], "similarity": float(sims[i])}
+        for i in top_idx if sims[i] > 0
+    ]
+    return {
+        "track_id": track_id,
+        "similar_tracks": results,
+        "method": "cosine similarity over 29 real audio/emotion features (beyond_big_five dataset)",
+    }
+
+
+@lru_cache(maxsize=1)
+def _recommender_artifacts():
+    sys.path.insert(0, str(REPO_ROOT / "ml" / "recommendation"))
+    from hybrid import RecommenderUnavailable as _Unavailable, load_artifacts
+
+    try:
+        return load_artifacts()
+    except _Unavailable as e:
+        raise ArtifactUnavailable(str(e)) from e
+
+
+def get_recommendations(user_id: str, limit: int = 10, novelty: float | None = None, context: str | None = None) -> dict:
+    sys.path.insert(0, str(REPO_ROOT / "ml" / "recommendation"))
+    from hybrid import RecommenderUnavailable as _Unavailable, recommend
+
+    artifacts = _recommender_artifacts()
+    try:
+        return recommend(user_id, limit=limit, novelty=novelty, context=context, artifacts=artifacts)
+    except _Unavailable as e:
+        raise ArtifactUnavailable(str(e)) from e

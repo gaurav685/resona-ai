@@ -26,6 +26,7 @@ npm-debug.log*
 models/**/*.pt
 models/**/*.pkl
 models/**/*.joblib
+models/**/*.npy
 data/raw/**
 data/processed/**
 !data/raw/.gitkeep
