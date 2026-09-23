@@ -5,6 +5,7 @@ from app.models.personality_prediction import PersonalityPrediction
 from app.models.persona import Persona
 from app.models.recommendation import Recommendation
 from app.models.feedback import Feedback
+from app.models.recommendation_log import RecommendationLog, RecommendationFeedback
 
 __all__ = [
     "User",
@@ -14,4 +15,6 @@ __all__ = [
     "Persona",
     "Recommendation",
     "Feedback",
+    "RecommendationLog",
+    "RecommendationFeedback",
 ]

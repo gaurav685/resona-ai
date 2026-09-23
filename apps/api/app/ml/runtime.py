@@ -245,12 +245,20 @@ def _recommender_artifacts():
         raise ArtifactUnavailable(str(e)) from e
 
 
-def get_recommendations(user_id: str, limit: int = 10, novelty: float | None = None, context: str | None = None) -> dict:
+def get_recommendations(
+    user_id: str,
+    limit: int = 10,
+    novelty: float | None = None,
+    context: str | None = None,
+    feedback_rows: list[dict] | None = None,
+) -> dict:
     sys.path.insert(0, str(REPO_ROOT / "ml" / "recommendation"))
     from hybrid import RecommenderUnavailable as _Unavailable, recommend
+    from feedback import compute_feedback_adjustments
 
     artifacts = _recommender_artifacts()
+    feedback = compute_feedback_adjustments(feedback_rows) if feedback_rows else None
     try:
-        return recommend(user_id, limit=limit, novelty=novelty, context=context, artifacts=artifacts)
+        return recommend(user_id, limit=limit, novelty=novelty, context=context, artifacts=artifacts, feedback=feedback)
     except _Unavailable as e:
         raise ArtifactUnavailable(str(e)) from e

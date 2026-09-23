@@ -112,3 +112,54 @@ def test_context_alignment_exploratory_favors_unfamiliar():
     item1_align = scored.loc[scored["item_id"] == "item1", "context_alignment"].iloc[0]  # familiar (Artist A)
     item4_align = scored.loc[scored["item_id"] == "item4", "context_alignment"].iloc[0]  # unfamiliar (Artist C)
     assert item4_align > item1_align
+
+
+def test_is_new_artist_uses_full_history_not_just_top10():
+    # u1 played item0 (Artist A) heavily and item2 (Artist B) once — both
+    # played artists must never be flagged "new", regardless of play count.
+    artifacts = _synthetic_artifacts()
+    scored = score_candidates(artifacts, "u1")
+    item1_new = scored.loc[scored["item_id"] == "item1", "is_new_artist"].iloc[0]  # Artist A, played
+    item3_new = scored.loc[scored["item_id"] == "item3", "is_new_artist"].iloc[0]  # Artist B, played once
+    item4_new = scored.loc[scored["item_id"] == "item4", "is_new_artist"].iloc[0]  # Artist C, never played
+    assert item1_new == False  # noqa: E712
+    assert item3_new == False  # noqa: E712
+    assert item4_new == True  # noqa: E712
+
+
+# --- Part D: feedback integration ------------------------------------------
+
+def test_feedback_excludes_hidden_item_from_candidates():
+    artifacts = _synthetic_artifacts()
+    feedback = {"artist_multiplier": {}, "excluded_items": {"item1"}}
+    scored = score_candidates(artifacts, "u1", feedback=feedback)
+    assert "item1" not in scored["item_id"].values
+
+
+def test_feedback_boosts_artist_preference_score():
+    # A multiplier can only raise a preference that starts above zero —
+    # item4 (Artist C) is never played by u1, so its base preference is
+    # exactly 0 and no multiplier can lift it; use item3 (Artist B, u1 has
+    # a real nonzero preference for) instead.
+    artifacts = _synthetic_artifacts()
+    baseline = score_candidates(artifacts, "u1")
+    baseline_pref = baseline.loc[baseline["item_id"] == "item3", "artist_preference"].iloc[0]
+    assert baseline_pref > 0  # sanity: the test premise requires a nonzero base
+
+    feedback = {"artist_multiplier": {"Artist B": 1.8}, "excluded_items": set()}
+    boosted = score_candidates(artifacts, "u1", feedback=feedback)
+    boosted_pref = boosted.loc[boosted["item_id"] == "item3", "artist_preference"].iloc[0]
+
+    assert boosted_pref > baseline_pref
+
+
+def test_feedback_dampens_artist_preference_score():
+    artifacts = _synthetic_artifacts()
+    baseline = score_candidates(artifacts, "u1")
+    baseline_pref = baseline.loc[baseline["item_id"] == "item1", "artist_preference"].iloc[0]
+
+    feedback = {"artist_multiplier": {"Artist A": 0.3}, "excluded_items": set()}
+    dampened = score_candidates(artifacts, "u1", feedback=feedback)
+    dampened_pref = dampened.loc[dampened["item_id"] == "item1", "artist_preference"].iloc[0]
+
+    assert dampened_pref < baseline_pref

@@ -44,6 +44,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "features"))
 from catalog import load_events  # noqa: E402
 from context import compute_current_context  # noqa: E402
+from evidence import build_evidence, derive_reason_codes, generate_explanation  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MODELS_DIR = REPO_ROOT / "models" / "recommendation"
@@ -102,6 +103,7 @@ def score_candidates(
     user_id: str,
     weights: dict[str, float] | None = None,
     context_override: str | None = None,
+    feedback: dict | None = None,
 ) -> pd.DataFrame:
     weights = weights or DEFAULT_WEIGHTS
     events = artifacts.events
@@ -122,8 +124,12 @@ def score_candidates(
         context_label = compute_current_context(events, user_id).context_label
     familiar_artists = set(artist_play_counts.head(10).index)
 
-    # Candidates: catalog items the user hasn't played.
-    candidates = catalog[~catalog["item_id"].isin(played_item_ids)].copy()
+    # Candidates: catalog items the user hasn't played, minus anything
+    # they've explicitly disliked/hidden (Part D feedback exclusion).
+    excluded_items = (feedback or {}).get("excluded_items", set())
+    candidates = catalog[
+        ~catalog["item_id"].isin(played_item_ids) & ~catalog["item_id"].isin(excluded_items)
+    ].copy()
     if candidates.empty:
         return candidates
 
@@ -151,10 +157,26 @@ def score_candidates(
     if max_pref > 0:
         candidates["artist_preference"] = candidates["artist_preference"] / max_pref
 
+    # Part D: apply the feedback-derived per-artist multiplier (liked/saved/
+    # replayed artists boosted, disliked/skipped artists dampened) — a
+    # simple deterministic reweight, not RL/bandits. Intentionally applied
+    # after normalization so it can push a candidate above 1.0 on this
+    # component; the final `score` is a ranking scalar, not a probability.
+    artist_multiplier = (feedback or {}).get("artist_multiplier", {})
+    if artist_multiplier:
+        candidates["artist_preference"] = candidates.apply(
+            lambda r: r["artist_preference"] * artist_multiplier.get(r["artist_name"], 1.0), axis=1
+        )
+
     candidates["context_alignment"] = candidates["artist_name"].map(
         lambda a: _context_alignment(a, familiar_artists, context_label)
     )
 
+    # "New artist" = genuinely never played before — deliberately NOT
+    # familiar_artists (top-10 by count), which would mislabel an artist
+    # the user has actually played (just not among their top 10) as "new"
+    # and make the generated explanation text factually false.
+    candidates["is_new_artist"] = ~candidates["artist_name"].isin(played_artists)
     candidates["novelty"] = 1.0 - candidates["popularity"]
 
     candidates["score"] = (
@@ -223,6 +245,7 @@ def recommend(
     novelty: float | None = None,
     context: str | None = None,
     artifacts: RecommenderArtifacts | None = None,
+    feedback: dict | None = None,
 ) -> dict:
     artifacts = artifacts or load_artifacts()
 
@@ -236,30 +259,40 @@ def recommend(
         for k in weights:
             weights[k] = novelty if k == "novelty" else DEFAULT_WEIGHTS[k] / other_total * remaining
 
-    scored = score_candidates(artifacts, user_id, weights=weights, context_override=context)
+    scored = score_candidates(artifacts, user_id, weights=weights, context_override=context, feedback=feedback)
     ranked = diversify(scored, artifacts, limit=limit)
+    context_label = scored["context_label"].iloc[0] if not scored.empty else "Unknown"
 
     items = []
     for _, row in ranked.iterrows():
+        score_breakdown = {
+            "co_listening_similarity": float(row["co_listening_similarity"]),
+            "artist_preference": float(row["artist_preference"]),
+            "context_alignment": float(row["context_alignment"]),
+            "novelty": float(row["novelty"]),
+        }
+        evidence = build_evidence(score_breakdown, float(row["popularity"]), bool(row["is_new_artist"]))
+        reason_codes = derive_reason_codes(evidence, context_label)
+        explanation = generate_explanation(
+            evidence, reason_codes, context_label, row["artist_name"], row["track_title"]
+        )
         items.append(
             {
                 "item_id": row["item_id"],
                 "artist_name": row["artist_name"],
                 "track_title": row["track_title"],
                 "score": float(row["score"]),
-                "score_breakdown": {
-                    "co_listening_similarity": float(row["co_listening_similarity"]),
-                    "artist_preference": float(row["artist_preference"]),
-                    "context_alignment": float(row["context_alignment"]),
-                    "novelty": float(row["novelty"]),
-                },
+                "score_breakdown": score_breakdown,
                 "popularity": float(row["popularity"]),
+                "evidence": evidence,
+                "reason_codes": reason_codes,
+                "explanation": explanation,
             }
         )
 
     return {
         "user_id": user_id,
-        "context_label": scored["context_label"].iloc[0] if not scored.empty else "Unknown",
+        "context_label": context_label,
         "weights_used": weights,
         "recommendations": items,
         "note": (
