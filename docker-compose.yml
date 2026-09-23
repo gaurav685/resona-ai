@@ -10,7 +10,14 @@ services:
       - DATABASE_URL=sqlite:///./resona.db
       - CORS_ORIGINS=["http://localhost:3000"]
     volumes:
-      - ./apps/api:/app
+      # Live code edits without a rebuild.
+      - ./apps/api/app:/resona/apps/api/app
+      - ./ml:/resona/ml
+      # Trained models and datasets are large/gitignored and produced by
+      # the local pipeline scripts (see README) — mounted read-only rather
+      # than baked into the image.
+      - ./models:/resona/models:ro
+      - ./data:/resona/data:ro
 
   web:
     build:
@@ -25,3 +32,4 @@ services:
     volumes:
       - ./apps/web:/app
       - /app/node_modules
+      - /app/.next

@@ -4,85 +4,109 @@
 
 Resona AI is a monolithic-by-design college MVP: one FastAPI backend, one
 Next.js frontend, one SQLite database, and a standalone `ml/` pipeline that
-writes artifacts consumed by the backend. No microservices, message queues,
-or distributed infrastructure — deliberately, to keep the system
-understandable and reproducible within a college project scope.
+writes artifacts consumed by the backend at inference time. No
+microservices, message queues, or distributed infrastructure — deliberately,
+to keep the system understandable and reproducible within a college
+project scope. See README.md § 16 for what a production version would add.
 
 ```
-┌─────────────┐      HTTP/JSON      ┌──────────────┐
-│  apps/web    │ ─────────────────▶ │  apps/api     │
-│  Next.js     │ ◀───────────────── │  FastAPI      │
-└─────────────┘                     └──────┬───────┘
-                                            │ SQLAlchemy
-                                            ▼
-                                     ┌──────────────┐
-                                     │  SQLite DB    │
-                                     └──────┬───────┘
-                                            ▲
-                                            │ writes predictions/
-                                            │ personas/recommendations
-                                     ┌──────┴───────┐
-                                     │  ml/ pipeline │
-                                     │  (offline)    │
-                                     └──────────────┘
+┌──────────────┐      HTTP/JSON      ┌───────────────┐
+│  apps/web     │ ─────────────────▶ │  apps/api      │
+│  Next.js      │ ◀───────────────── │  FastAPI       │
+│  (9 pages)    │                     └──────┬────────┘
+└──────────────┘                            │
+                                              │ reads at inference time
+                              ┌───────────────┼───────────────┐
+                              ▼               ▼               ▼
+                     ┌────────────┐  ┌───────────────┐  ┌───────────────┐
+                     │  models/    │  │ data/processed │  │  SQLite DB    │
+                     │ (trained    │  │ (real events,  │  │ (evidence +   │
+                     │  artifacts) │  │  from ml/)      │  │  feedback)    │
+                     └──────┬─────┘  └───────┬────────┘  └───────────────┘
+                            ▲                ▲
+                            │  writes         │  writes
+                     ┌──────┴────────────────┴───────┐
+                     │            ml/ pipeline         │
+                     │  (offline — scripts, not a       │
+                     │   live service)                  │
+                     └──────────────────────────────────┘
 ```
 
 ## Backend (`apps/api`)
 
-- **FastAPI** application, versioned API under `/api/v1`.
-- **SQLAlchemy 2.0** declarative models, **SQLite** for storage (file-based,
-  zero-config — appropriate for MVP scale).
-- **Pydantic Settings** for environment configuration (`app/core/config.py`).
-- Layout:
-  - `app/models/` — SQLAlchemy ORM models (one file per entity)
-  - `app/schemas/` — Pydantic request/response schemas (added as endpoints
-    are built in later phases)
-  - `app/api/v1/` — versioned route modules
-  - `app/db/` — engine/session/base setup
+- **FastAPI**, versioned API under `/api/v1`.
+- **SQLAlchemy 2.0** + **SQLite**, **Pydantic Settings** for config
+  (`app/core/config.py`).
+- `app/ml/runtime.py` — the one place that loads `ml/` artifacts and
+  `models/` files for the API (lazy, `lru_cache`d); every route handler
+  calls into it rather than touching files directly.
+- Layout: `app/models/` (SQLAlchemy ORM), `app/schemas/` (Pydantic I/O),
+  `app/api/v1/` (route modules), `app/db/` (engine/session).
 
-### Data model (Phase 1)
+### Data model
 
-| Model | Purpose |
+Two generations of models coexist, deliberately:
+
+| Model | Purpose | Status |
+|---|---|---|
+| `User`, `Track`, `ListeningEvent`, `PersonalityPrediction`, `Persona`, `Recommendation`, `Feedback` | Phase 1 scaffolding for a future app-native signup flow | Declared, never populated — the real pipeline runs on file-based research data, not these tables |
+| `RecommendationLog`, `RecommendationFeedback` | Phase 5 — persisted evidence + feedback for real recommendations, keyed by Last.fm string ids (no FK to the unpopulated `User`/`Track` tables) | Actively used by every recommendation request |
+
+### API surface
+
+| Route | Purpose |
 |---|---|
-| `User` | listener account |
-| `Track` | song with audio features |
-| `ListeningEvent` | a single play event linking a user to a track |
-| `PersonalityPrediction` | model-estimated Big Five trait associations for a user |
-| `Persona` | discovered listener cluster/persona assignment |
-| `Recommendation` | a scored, explainable track recommendation |
-| `Feedback` | user feedback (like/dislike) on a recommendation |
+| `GET /health`, `/api/v1/health` | liveness |
+| `GET /api/v1/users` | real Last.fm 1K user list (demo-listener picker) |
+| `GET /api/v1/users/{id}/listening-dna` | behavioral features + top artists |
+| `GET /api/v1/users/{id}/persona` | KMeans cluster assignment + z-scores |
+| `GET /api/v1/users/{id}/current-context` | session-vs-baseline shift classification |
+| `GET /api/v1/users/{id}/taste-evolution` | real monthly-binned trends |
+| `GET /api/v1/personality/sample-participants` | real beyond_big_five participants + features |
+| `POST /api/v1/personality/predict` | Big Five inference |
+| `GET /api/v1/tracks/{id}/similar` | real audio-feature cosine similarity |
+| `GET /api/v1/recommendations` | hybrid recommender, persists evidence |
+| `GET /api/v1/recommendations/{id}/explanation` | regenerated from stored evidence |
+| `POST /api/v1/recommendations/{id}/feedback` | like/dislike/skip/save/replay/hide |
 
 ## Frontend (`apps/web`)
 
-- **Next.js (App Router)** + **TypeScript** + **Tailwind CSS**.
-- Minimal design system in `src/components/ui/` (Card, Badge — expanded as
-  pages are built).
-- `src/components/` holds shell-level components (NavBar, Footer,
-  HealthStatus).
-- **Recharts** for data visualization, **lucide-react** for icons (added in
-  the dashboard/recommendation phases).
+Next.js 16 App Router + TypeScript + Tailwind v4 + Recharts + Lucide.
+9 pages (Landing, Dashboard, Listening DNA, Personality, Persona, Current
+State, Recommendations, Taste Evolution, About). `lib/user-context.tsx`
+holds the selected demo listener (no auth in this MVP — see README § 15);
+`lib/api.ts` + `lib/types.ts` are the single typed client surface, mirrored
+1:1 against the backend Pydantic schemas.
 
 ## ML pipeline (`ml/`)
 
-Offline, script-driven pipeline — not a live service:
+Offline, script-driven — never imported as a live service by the API
+beyond its pure functions (`ml/features/*`, `ml/recommendation/evidence.py`,
+`ml/recommendation/feedback.py` are imported directly by `app/ml/runtime.py`
+for shared logic; training/clustering/evaluation scripts are run manually,
+not at request time):
 
-- `ml/data/` — dataset loading and cleaning
-- `ml/features/` — audio + behavioral feature engineering
-- `ml/personality/` — Big Five trait estimation models (classical ML first;
-  a neural model is added only if it earns its complexity)
-- `ml/personas/` — clustering for listener persona discovery
-- `ml/recommendation/` — recommendation scoring + explanation generation
-- `ml/evaluation/` — offline metrics, reported in `EVALUATION.md`
+- `ml/features/` — `listening_dna.py`, `context.py`, `taste_evolution.py`
+- `ml/personality/` — `dataset.py`, `train_classical.py`, `train_nn.py`
+  (GPU-aware), `compare_and_select.py`
+- `ml/personas/` — `cluster.py` (KMeans + DBSCAN comparison + PCA)
+- `ml/recommendation/` — `catalog.py`, `item_similarity.py`,
+  `content_similarity.py`, `hybrid.py`, `evidence.py`, `feedback.py`,
+  `evaluate.py`
 
-Trained artifacts are written to `models/` and loaded by the backend at
-inference time. No online/streaming training in this MVP.
+Trained artifacts are written to `models/` (binaries gitignored, metrics
+JSON/CSV kept) and loaded by the backend at inference time.
 
 ## Why this design
 
 - **SQLite over Postgres**: zero infrastructure, fully reproducible with a
   single file, sufficient for MVP data volumes.
-- **Monolith over microservices**: one deploy target, one codebase to
-  reason about — matches the scope of a college submission.
+- **Monolith over microservices**: one deploy target, one codebase — matches
+  the scope of a college submission.
 - **Offline ML pipeline over live training service**: training is
-  reproducible via scripts (`scripts/`), results are versioned as files in
-  `models/`, and the API only performs inference.
+  reproducible via scripts, results are versioned as files in `models/`,
+  and the API only performs inference.
+- **Two model generations, not a migration**: retrofitting the Phase 1
+  `User`/`Track` FK schema onto Last.fm's string ids would mean fabricating
+  thousands of placeholder rows just to satisfy a constraint; the Phase 5
+  tables were sized for what's actually needed instead.

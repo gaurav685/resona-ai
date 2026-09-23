@@ -7,9 +7,10 @@ python-dotenv==1.0.1
 pytest==8.3.3
 httpx==0.27.2
 
-# ML inference (loading Phase 3 model artifacts)
+# ML inference (loading trained model artifacts)
 pandas==2.2.3
 numpy==1.26.4
 scikit-learn==1.5.2
 xgboost==2.1.1
 joblib==1.4.2
+xlrd==2.0.1
