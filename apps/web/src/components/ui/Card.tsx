@@ -10,9 +10,13 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-black/10 dark:border-white/10 bg-white/60 dark:bg-white/[0.03] backdrop-blur-sm p-6 shadow-sm",
+        "rounded-2xl border p-6 shadow-sm transition-colors",
         className
       )}
+      style={{
+        borderColor: "var(--border)",
+        background: "var(--surface)",
+      }}
     >
       {children}
     </div>

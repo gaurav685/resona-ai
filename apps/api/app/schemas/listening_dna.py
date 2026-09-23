@@ -1,10 +1,16 @@
 from pydantic import BaseModel
 
 
+class TopArtist(BaseModel):
+    artist_name: str
+    play_count: int
+
+
 class ListeningDNAResponse(BaseModel):
     user_id: str
     n_events: int
     n_sessions: int
+    top_artists: list[TopArtist]
     listening_frequency: float | None
     average_session_duration_min: float | None
     tracks_per_session: float | None

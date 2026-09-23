@@ -34,3 +34,14 @@ class ModelInfoResponse(BaseModel):
     model_version: str
     feature_columns: list[str]
     trait_columns: list[str]
+
+
+class SampleParticipant(BaseModel):
+    participant_id: str
+    features: dict[str, float]
+    actual_traits: dict[str, float]
+
+
+class SampleParticipantsResponse(BaseModel):
+    participants: list[SampleParticipant]
+    note: str

@@ -22,6 +22,7 @@ sys.path.insert(0, str(REPO_ROOT / "ml"))
 
 from features.listening_dna import compute_listening_dna  # noqa: E402
 from features.context import compute_current_context  # noqa: E402
+from features.taste_evolution import compute_taste_evolution  # noqa: E402
 
 MODELS_PERSONALITY_DIR = REPO_ROOT / "models" / "personality"
 MODELS_PERSONAS_DIR = REPO_ROOT / "models" / "personas"
@@ -48,12 +49,30 @@ def known_user_ids() -> set[str]:
     return set(get_listening_events_df()["user_id"].unique())
 
 
+@lru_cache(maxsize=1)
+def list_users() -> list[dict]:
+    """Real Last.fm 1K users with their actual event counts — used by the
+    frontend's demo-listener picker (there is no auth/signup flow in this
+    MVP, so a real user must be selected explicitly rather than assumed)."""
+    events = get_listening_events_df()
+    counts = events.groupby("user_id").size().sort_values(ascending=False)
+    return [{"user_id": uid, "n_events": int(n)} for uid, n in counts.items()]
+
+
 def get_listening_dna(user_id: str) -> dict:
     events = get_listening_events_df()
     if user_id not in set(events["user_id"].unique()):
         raise ArtifactUnavailable(f"unknown user_id: {user_id}")
     dna = compute_listening_dna(events, user_id)
     return dna.to_dict()
+
+
+def get_taste_evolution(user_id: str) -> dict:
+    events = get_listening_events_df()
+    if user_id not in set(events["user_id"].unique()):
+        raise ArtifactUnavailable(f"unknown user_id: {user_id}")
+    periods = compute_taste_evolution(events, user_id)
+    return {"user_id": user_id, "periods": periods}
 
 
 def get_current_context(user_id: str) -> dict:
@@ -102,10 +121,36 @@ def get_persona(user_id: str) -> dict:
         "cluster_size": profile["n_users"],
         "pca_coordinates": {"x": float(row["pca_x"]), "y": float(row["pca_y"])},
         "cluster_feature_means": profile["feature_means"],
+        "cluster_feature_z_scores": profile["feature_z_scores_vs_global"],
         "algorithm": metadata["algorithm"],
         "model_version": f"kmeans-k{metadata['k_selected']}",
         "silhouette_score": metadata["silhouette_score"],
     }
+
+
+@lru_cache(maxsize=1)
+def list_personality_sample_participants(limit: int = 30) -> list[dict]:
+    """Real participants (and their real feature vectors + actual measured
+    Big Five scores) from the beyond_big_five research dataset — this is
+    the ONLY dataset in the project with real inputs for the personality
+    model (see MODEL_CARD.md). There is no personality data for Last.fm
+    users, so the frontend lets a user pick one of these real research
+    participants rather than pretending Last.fm listening behavior can
+    feed this model."""
+    sys.path.insert(0, str(REPO_ROOT / "ml" / "personality"))
+    from dataset import load_personality_dataset
+
+    X, y, ids = load_personality_dataset()
+    out = []
+    for i in range(min(limit, len(X))):
+        out.append(
+            {
+                "participant_id": str(ids.iloc[i]),
+                "features": {c: float(X.iloc[i][c]) for c in X.columns},
+                "actual_traits": {c: float(y.iloc[i][c]) for c in y.columns},
+            }
+        )
+    return out
 
 
 @lru_cache(maxsize=1)

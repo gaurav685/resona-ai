@@ -15,6 +15,7 @@ class PersonaResponse(BaseModel):
     cluster_size: int
     pca_coordinates: PCACoordinates
     cluster_feature_means: dict[str, float]
+    cluster_feature_z_scores: dict[str, float]
     algorithm: str
     model_version: str
     silhouette_score: float

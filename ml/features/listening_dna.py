@@ -60,6 +60,7 @@ class ListeningDNA:
     discovery_rate: float | None  # fraction of plays that are a first-time artist for this user
     night_listening_ratio_utc: float | None
     weekend_listening_ratio_utc: float | None
+    top_artists: list = field(default_factory=list)  # [{"artist_name": str, "play_count": int}], real counts
     unavailable: dict = field(default_factory=lambda: dict(UNAVAILABLE_FEATURES))
 
     def to_dict(self) -> dict:
@@ -77,6 +78,7 @@ class ListeningDNA:
             "discovery_rate": self.discovery_rate,
             "night_listening_ratio_utc": self.night_listening_ratio_utc,
             "weekend_listening_ratio_utc": self.weekend_listening_ratio_utc,
+            "top_artists": self.top_artists,
         }
         for name, reason in self.unavailable.items():
             d[name] = None
@@ -145,6 +147,10 @@ def compute_listening_dna(events: pd.DataFrame, user_id: str) -> ListeningDNA:
     repeat_rate = float((track_counts > 1).sum() / len(track_counts)) if len(track_counts) else None
 
     artist_counts = user_events["artist_name"].value_counts()
+    top_artists = [
+        {"artist_name": name, "play_count": int(count)}
+        for name, count in artist_counts.head(10).items()
+    ]
     artist_diversity = float(len(artist_counts) / n_events)
     artist_shares = (artist_counts / n_events).to_numpy()
     artist_concentration = _herfindahl(artist_shares)
@@ -173,6 +179,7 @@ def compute_listening_dna(events: pd.DataFrame, user_id: str) -> ListeningDNA:
         discovery_rate=discovery_rate,
         night_listening_ratio_utc=night_listening_ratio_utc,
         weekend_listening_ratio_utc=weekend_listening_ratio_utc,
+        top_artists=top_artists,
     )
 
 
