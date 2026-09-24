@@ -20,9 +20,10 @@ import pandas as pd
 REPO_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(REPO_ROOT / "ml"))
 
-from features.listening_dna import compute_listening_dna  # noqa: E402
+from features.listening_dna import compute_listening_dna, sessionize  # noqa: E402
 from features.context import compute_current_context  # noqa: E402
 from features.taste_evolution import compute_taste_evolution  # noqa: E402
+from features.upload_parser import parse_uploaded_file, UnrecognizedUploadFormat  # noqa: E402
 
 MODELS_PERSONALITY_DIR = REPO_ROOT / "models" / "personality"
 MODELS_PERSONAS_DIR = REPO_ROOT / "models" / "personas"
@@ -307,3 +308,95 @@ def get_recommendations(
         return recommend(user_id, limit=limit, novelty=novelty, context=context, artifacts=artifacts, feedback=feedback)
     except _Unavailable as e:
         raise ArtifactUnavailable(str(e)) from e
+
+
+# ---------------------------------------------------------------------------
+# "Bring your own history": Spotify / YouTube Music / Apple Music uploads
+# ---------------------------------------------------------------------------
+
+def analyze_uploaded_history(files: list[tuple[str, bytes]], service: str) -> dict:
+    """Parses a listener's own export, runs it through the same real
+    Listening DNA / context / taste-evolution / recommendation pipeline
+    used for the Last.fm demo listeners. Nothing here is fabricated for a
+    catalog gap: recommendation co-listening similarity is only as good as
+    the real overlap between the upload and our fixed Last.fm catalog, and
+    that overlap is reported honestly rather than papered over.
+
+    Nothing from the upload is written to disk; it's processed in memory
+    for this one request. (Recommendation evidence for any resulting
+    recommendations is still persisted to SQLite, same as every other
+    recommendation this API returns — see MODEL_CARD.md / README privacy
+    section.)
+    """
+    import uuid
+
+    sys.path.insert(0, str(REPO_ROOT / "ml" / "recommendation"))
+    from catalog import item_id as _item_id
+    from hybrid import RecommenderArtifacts, recommend
+
+    frames = []
+    parse_errors: dict[str, str] = {}
+    for filename, raw in files:
+        try:
+            df = parse_uploaded_file(filename, raw, service, user_id="_pending_")
+            if not df.empty:
+                frames.append(df)
+        except UnrecognizedUploadFormat as e:
+            parse_errors[filename] = str(e)
+
+    if not frames:
+        raise ArtifactUnavailable(
+            "Could not parse any events from the uploaded file(s). "
+            + ("; ".join(f"{k}: {v}" for k, v in parse_errors.items()) if parse_errors else "No recognizable rows found.")
+        )
+
+    user_id = f"uploaded_{uuid.uuid4().hex[:12]}"
+    events = pd.concat(frames, ignore_index=True)
+    events["user_id"] = user_id
+    events = events.drop_duplicates(subset=["user_id", "played_at", "artist_name", "track_title"])
+    events["played_at"] = pd.to_datetime(events["played_at"], utc=True)
+    events = sessionize(events)
+
+    dna = compute_listening_dna(events, user_id).to_dict()
+    context = compute_current_context(events, user_id).to_dict()
+    evolution = compute_taste_evolution(events, user_id)
+
+    catalog_item_ids = {
+        _item_id(a, t) for a, t in zip(events["artist_name"], events["track_title"])
+    }
+    artifacts = _recommender_artifacts()
+    n_matched = len(catalog_item_ids & set(artifacts.item_idx.keys()))
+
+    uploaded_with_item_id = events.assign(
+        item_id=[_item_id(a, t) for a, t in zip(events["artist_name"], events["track_title"])]
+    )[["user_id", "artist_name", "track_title", "played_at", "item_id"]]
+    merged_events = pd.concat([artifacts.events, uploaded_with_item_id], ignore_index=True)
+    merged_artifacts = RecommenderArtifacts(
+        events=merged_events, catalog=artifacts.catalog, sim_matrix=artifacts.sim_matrix, item_ids=artifacts.item_ids
+    )
+
+    try:
+        recommendations = recommend(user_id, limit=10, artifacts=merged_artifacts)
+    except Exception:
+        recommendations = None
+
+    return {
+        "session_user_id": user_id,
+        "service": service,
+        "n_files": len(files),
+        "n_events_parsed": len(events),
+        "n_tracks_matched_catalog": n_matched,
+        "n_distinct_tracks": len(catalog_item_ids),
+        "parse_errors": parse_errors,
+        "listening_dna": dna,
+        "current_context": context,
+        "taste_evolution": {"user_id": user_id, "periods": evolution},
+        "recommendations": recommendations,
+        "note": (
+            f"{n_matched} of {len(catalog_item_ids)} distinct tracks you listened to matched our "
+            "recommendation catalog (top 1,500 Last.fm items by unique listener) closely enough "
+            "(same artist + track name) to contribute a co-listening similarity signal — "
+            "recommendations lean more on artist preference and novelty when overlap is low. "
+            "This upload was processed in memory and not saved to disk."
+        ),
+    }

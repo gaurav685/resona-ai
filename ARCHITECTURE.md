@@ -68,6 +68,7 @@ Two generations of models coexist, deliberately:
 | `GET /api/v1/recommendations` | hybrid recommender, persists evidence |
 | `GET /api/v1/recommendations/{id}/explanation` | regenerated from stored evidence |
 | `POST /api/v1/recommendations/{id}/feedback` | like/dislike/skip/save/replay/hide |
+| `POST /api/v1/uploads/analyze` | parses a real Spotify/YouTube Music/Apple Music export, runs the same DNA/context/recommendation pipeline on it, in memory, nothing written to disk |
 
 ## Frontend (`streamlit_app`)
 

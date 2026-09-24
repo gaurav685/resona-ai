@@ -74,3 +74,11 @@ st.write(
     "SQLite database for the explainability and feedback-loop features to function, "
     "and are not sent anywhere else."
 )
+st.write(
+    "**Your Own History uploads**: your Spotify/YouTube Music/Apple Music export is "
+    "parsed in memory for that one request and never written to disk. Any "
+    "recommendations generated from it are logged like any other recommendation "
+    "(so Like/Dislike/Save/Hide work) under a random session id, not your real name "
+    "or account — the raw uploaded listening events themselves are discarded once the "
+    "response is returned."
+)

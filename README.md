@@ -83,6 +83,7 @@ resona-ai/
 | Recommendations | Hybrid scoring + MMR diversity rerank, novelty/context tunable | `GET /api/v1/recommendations` |
 | Explanation | Deterministic, evidence-grounded (never an LLM) | `GET /api/v1/recommendations/{id}/explanation` |
 | Feedback | like/dislike/skip/save/replay/hide, affects future scoring | `POST /api/v1/recommendations/{id}/feedback` |
+| Your Own History | Upload your real Spotify/YouTube Music/Apple Music export — runs the same real DNA/context/recommendation pipeline on it, not the demo listeners | `POST /api/v1/uploads/analyze` |
 
 ## 7. Dataset sources
 
@@ -227,6 +228,12 @@ pytest                              # backend + ML + Streamlit pages, 107 tests
 - night/weekend listening ratios use UTC timestamps, not the listener's
   true local time zone (not present in source data).
 - No auth/user accounts — a real demo-listener picker stands in.
+- Your Own History (§ 6) uses real uploaded exports, not live OAuth — this
+  project has no registered Spotify/Google developer app to do live login.
+  Its recommendation co-listening signal is only as good as the real
+  overlap between your upload and the fixed Last.fm catalog (reported
+  per-upload, not hidden); personality is still not computed for it —
+  same reason as the demo listeners.
 
 ## 16. Future work
 
@@ -244,7 +251,7 @@ simple bounded feedback reweighting.
 - Local Docker → **cloud deployment**
 - Ad hoc experiment tracking → **MLflow / model registry**
 - Simple feedback weighting → **advanced ranking / online learning**
-- Spotify OAuth for real listener accounts
+- Live Spotify/YouTube Music OAuth login (real-time sync, not an export upload)
 - **Redis** for caching hot recommendation queries
 
 None of the above is implemented now — this MVP is intentionally sized to

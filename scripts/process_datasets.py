@@ -32,6 +32,7 @@ from data.schemas import (  # noqa: E402
     ListeningEvent,
     parse_timestamp,
 )
+from features.listening_dna import sessionize as _sessionize  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = REPO_ROOT / "data" / "raw"
@@ -244,21 +245,6 @@ def process_deam() -> None:
 # ---------------------------------------------------------------------------
 # lastfm_1k
 # ---------------------------------------------------------------------------
-
-def _sessionize(events: pd.DataFrame) -> pd.DataFrame:
-    events = events.sort_values(["user_id", "played_at"]).reset_index(drop=True)
-    gap = pd.Timedelta(minutes=SESSION_GAP_MINUTES)
-    session_ids = []
-    counters: dict[str, int] = {}
-    last_ts: dict[str, pd.Timestamp] = {}
-    for user_id, ts in zip(events["user_id"], events["played_at"]):
-        if user_id not in counters or ts - last_ts[user_id] > gap:
-            counters[user_id] = counters.get(user_id, 0) + 1
-        last_ts[user_id] = ts
-        session_ids.append(f"{user_id}-s{counters[user_id]}")
-    events["session_id"] = session_ids
-    return events
-
 
 def process_lastfm() -> None:
     print("[lastfm_1k]")

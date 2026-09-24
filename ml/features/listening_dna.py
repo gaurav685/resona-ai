@@ -104,6 +104,25 @@ def _herfindahl(shares: np.ndarray) -> float:
     return float(np.sum(shares**2))
 
 
+def sessionize(events: pd.DataFrame, gap_minutes: int = SESSION_GAP_MINUTES) -> pd.DataFrame:
+    """Assigns a session_id to each event: a new session starts whenever
+    more than `gap_minutes` has passed since that user's previous event.
+    Shared by scripts/process_datasets.py (Last.fm) and the upload
+    pipeline (ml/features/upload_parser.py) so both sessionize identically."""
+    events = events.sort_values(["user_id", "played_at"]).reset_index(drop=True)
+    gap = pd.Timedelta(minutes=gap_minutes)
+    session_ids = []
+    counters: dict[str, int] = {}
+    last_ts: dict[str, "pd.Timestamp"] = {}
+    for user_id, ts in zip(events["user_id"], events["played_at"]):
+        if user_id not in counters or ts - last_ts[user_id] > gap:
+            counters[user_id] = counters.get(user_id, 0) + 1
+        last_ts[user_id] = ts
+        session_ids.append(f"{user_id}-s{counters[user_id]}")
+    events["session_id"] = session_ids
+    return events
+
+
 def compute_listening_dna(events: pd.DataFrame, user_id: str) -> ListeningDNA:
     """Compute Listening DNA for a single user from their event rows.
 

@@ -93,3 +93,10 @@ def submit_feedback(recommendation_id: str, feedback_type: str) -> dict:
 
 def get_similar_tracks(track_id: str, limit: int = 10) -> dict:
     return _request("GET", f"/api/v1/tracks/{track_id}/similar", params={"limit": limit})
+
+
+def analyze_upload(service: str, uploaded_files: list) -> dict:
+    """uploaded_files: list of Streamlit UploadedFile objects (or any
+    object with .name and .getvalue())."""
+    files = [("files", (f.name, f.getvalue())) for f in uploaded_files]
+    return _request("POST", "/api/v1/uploads/analyze", data={"service": service}, files=files)

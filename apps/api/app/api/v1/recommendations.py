@@ -13,12 +13,11 @@ from app.schemas.recommendation import (
     FeedbackResponse,
     RecommendationsResponse,
 )
+from app.services.recommendation_persistence import persist_recommendations
 
 REPO_ROOT = Path(__file__).resolve().parents[5]
 sys.path.insert(0, str(REPO_ROOT / "ml" / "recommendation"))
 from evidence import generate_explanation  # noqa: E402
-
-MODEL_VERSION = "hybrid-v1"
 
 router = APIRouter(prefix="/recommendations", tags=["recommendations"])
 
@@ -53,27 +52,7 @@ def recommendations(
     except ArtifactUnavailable as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
 
-    persisted = []
-    for item in result["recommendations"]:
-        log = RecommendationLog(
-            user_id=user_id,
-            item_id=item["item_id"],
-            artist_name=item["artist_name"],
-            track_title=item["track_title"],
-            score=item["score"],
-            score_breakdown=item["score_breakdown"],
-            context_label=result["context_label"],
-            reason_codes=item["reason_codes"],
-            evidence=item["evidence"],
-            model_version=MODEL_VERSION,
-        )
-        db.add(log)
-        db.flush()  # assigns log.id without ending the transaction
-        item["recommendation_id"] = log.id
-        persisted.append(item)
-    db.commit()
-
-    result["recommendations"] = persisted
+    result = persist_recommendations(db, user_id, result)
     return RecommendationsResponse(**result)
 
 
