@@ -6,11 +6,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import streamlit as st
 
 from lib.state import render_user_picker
+from lib.style import render_header, render_footer
 
 st.set_page_config(page_title="Methodology — Resona AI", page_icon="🎧", layout="wide")
 render_user_picker()
-st.title("Methodology")
-st.caption("What Resona is built on, how each layer actually works, and where it's honestly limited.")
+render_header(
+    "Methodology", icon="📖",
+    subtitle="What Resona is built on, how each layer actually works, and where it's honestly limited.",
+)
 
 st.header("Datasets")
 datasets = [
@@ -82,3 +85,5 @@ st.write(
     "or account — the raw uploaded listening events themselves are discarded once the "
     "response is returned."
 )
+
+render_footer()

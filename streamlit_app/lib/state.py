@@ -5,6 +5,7 @@ explicitly (mirrors apps/web/src/lib/user-context.tsx)."""
 import streamlit as st
 
 from lib import api
+from lib.style import inject_css
 
 
 @st.cache_data(ttl=300)
@@ -13,6 +14,12 @@ def _load_users() -> list[dict]:
 
 
 def render_user_picker() -> str | None:
+    inject_css()
+    st.sidebar.markdown(
+        '<div class="resona-brand">🎧 Resona AI</div>',
+        unsafe_allow_html=True,
+    )
+
     try:
         users = _load_users()
     except api.ApiError as e:
@@ -29,12 +36,16 @@ def render_user_picker() -> str | None:
     if "user_id" not in st.session_state or st.session_state.user_id not in ids:
         st.session_state.user_id = ids[0]
 
+    st.sidebar.caption("DEMO LISTENER")
     selected = st.sidebar.selectbox(
         "Demo listener",
         ids,
         index=ids.index(st.session_state.user_id),
         format_func=lambda uid: labels[uid],
         key="user_id_select",
+        label_visibility="collapsed",
     )
     st.session_state.user_id = selected
+    st.sidebar.caption(f"{len(ids)} real Last.fm listeners available")
+    st.sidebar.divider()
     return selected

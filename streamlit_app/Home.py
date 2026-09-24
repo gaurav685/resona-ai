@@ -6,28 +6,41 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import streamlit as st
 
 from lib.state import render_user_picker
+from lib.style import inject_css, render_footer
+from lib import theme
 
 st.set_page_config(page_title="Resona AI", page_icon="🎧", layout="wide")
 
 render_user_picker()
-
-st.title("🎧 Resona AI")
-st.subheader("Understand people through music.")
+inject_css()
 
 st.markdown(
-    """
-Resona analyzes real listening behavior to estimate personality-related
-associations, discover listener personas, detect current listening
-context, and generate explainable, feedback-adaptive music
-recommendations — all backed by real datasets and models, with no
-fabricated numbers anywhere in the pipeline.
-
-> Personality outputs are **model-estimated associations**, not
-> psychological diagnoses. See `MODEL_CARD.md`.
-"""
+    f"""
+    <div style="padding: 2.5rem 0 1.5rem;">
+      <span class="resona-eyebrow">College MVP · Research Project</span>
+      <h1 style="font-size: 3rem; font-weight: 750; letter-spacing: -0.03em; margin: 0.3rem 0 0.6rem;">
+        Resona AI
+      </h1>
+      <p style="font-size: 1.3rem; color: {theme.TEXT_SECONDARY}; margin-bottom: 1rem;">
+        Understand people through music.
+      </p>
+      <p style="max-width: 42rem; color: {theme.TEXT_SECONDARY}; font-size: 1rem; line-height: 1.6;">
+        Resona analyzes real listening behavior to estimate personality-related associations,
+        discover listener personas, detect current listening context, and generate
+        explainable, feedback-adaptive music recommendations — all backed by real datasets
+        and models, with no fabricated numbers anywhere in the pipeline.
+      </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
 
-st.markdown("### From listening data to a recommendation")
+st.info(
+    "Personality outputs are **model-estimated associations**, not psychological diagnoses. "
+    "See the Methodology page."
+)
+
+st.markdown("#### From listening data to a recommendation")
 cols = st.columns(4)
 steps = [
     ("📊", "Listening Behavior", "Real events from the Last.fm 1K research dataset"),
@@ -37,38 +50,45 @@ steps = [
 ]
 for col, (icon, label, detail) in zip(cols, steps):
     with col:
-        st.markdown(f"**{icon} {label}**")
-        st.caption(detail)
+        with st.container(border=True):
+            st.markdown(f"### {icon}")
+            st.markdown(f"**{label}**")
+            st.caption(detail)
 
-st.divider()
-
+st.write("")
 left, right = st.columns(2)
 with left:
-    st.markdown("### Why typical recommenders fall short")
-    st.markdown(
-        "- **Popularity bias** — most recommenders lean on what's already popular\n"
-        "- **No explanation** — \"because you listened to X\" is usually the whole story\n"
-        "- **Behavior only** — plays/skips treated as the complete picture, ignoring "
-        "context, personality signal, or discovery intent"
-    )
+    with st.container(border=True):
+        st.markdown("#### Why typical recommenders fall short")
+        st.markdown(
+            "- **Popularity bias** — most recommenders lean on what's already popular\n"
+            "- **No explanation** — \"because you listened to X\" is usually the whole story\n"
+            "- **Behavior only** — plays/skips treated as the complete picture, ignoring "
+            "context, personality signal, or discovery intent"
+        )
 with right:
-    st.markdown("### What Resona adds")
+    with st.container(border=True):
+        st.markdown("#### What Resona adds")
+        st.markdown(
+            "- **Context intelligence** — session-vs-baseline behavioral shift detection\n"
+            "- **Persona discovery** — unsupervised clustering, never hard-coded labels\n"
+            "- **Personality signal** — a real trained model, evaluated honestly (including "
+            "where it underperforms)\n"
+            "- **Full explainability** — every recommendation's evidence is stored and its "
+            "explanation is generated from that evidence, never guessed"
+        )
+
+st.write("")
+with st.container(border=True):
+    st.markdown("#### 🗂️ Built on real research datasets")
     st.markdown(
-        "- **Context intelligence** — session-vs-baseline behavioral shift detection\n"
-        "- **Persona discovery** — unsupervised clustering, never hard-coded labels\n"
-        "- **Personality signal** — a real trained model, evaluated honestly (including "
-        "where it underperforms)\n"
-        "- **Full explainability** — every recommendation's evidence is stored and its "
-        "explanation is generated from that evidence, never guessed"
+        "Last.fm 1K (992 real users), the Beyond the Big Five music-personality dataset "
+        "(279 real research participants), the Million Song Dataset, and DEAM. Every metric "
+        "in this app is computed from these datasets or the models trained on them — see "
+        "**Methodology** in the sidebar for the full breakdown, including honest limitations."
     )
 
-st.divider()
-st.markdown(
-    "**Built on real research datasets**: Last.fm 1K (992 real users), the Beyond the "
-    "Big Five music-personality dataset (279 real research participants), the Million "
-    "Song Dataset, and DEAM. Every metric in this app is computed from these datasets "
-    "or the models trained on them — see the **Methodology** page for the full "
-    "breakdown, including honest limitations."
-)
+st.write("")
+st.success("👈 Pick a demo listener in the sidebar, then explore the pages there — or upload your own history on **Your Own History**.")
 
-st.info("Use the sidebar to pick a demo listener, then explore the pages on the left.")
+render_footer()
