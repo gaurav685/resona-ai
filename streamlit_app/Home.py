@@ -18,13 +18,13 @@ st.markdown(
     f"""
     <div style="padding: 2.5rem 0 1.5rem;">
       <span class="resona-eyebrow">College MVP · Research Project</span>
-      <h1 style="font-size: 3rem; font-weight: 750; letter-spacing: -0.03em; margin: 0.3rem 0 0.6rem;">
-        Resona AI
-      </h1>
-      <p style="font-size: 1.3rem; color: {theme.TEXT_SECONDARY}; margin-bottom: 1rem;">
+      <div class="resona-hero-title">🎧 Resona AI</div>
+      <p style="font-size: 1.35rem; font-weight: 500; color: {theme.TEXT_SECONDARY}; margin-bottom: 1rem;
+                animation: resona-fade-up 0.6s cubic-bezier(0.16,1,0.3,1) 0.2s both;">
         Understand people through music.
       </p>
-      <p style="max-width: 42rem; color: {theme.TEXT_SECONDARY}; font-size: 1rem; line-height: 1.6;">
+      <p style="max-width: 42rem; color: {theme.TEXT_SECONDARY}; font-size: 1.02rem; line-height: 1.65;
+                animation: resona-fade-up 0.6s cubic-bezier(0.16,1,0.3,1) 0.3s both;">
         Resona analyzes real listening behavior to estimate personality-related associations,
         discover listener personas, detect current listening context, and generate
         explainable, feedback-adaptive music recommendations — all backed by real datasets
