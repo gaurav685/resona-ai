@@ -3,17 +3,17 @@
 ## Overview
 
 Resona AI is a monolithic-by-design college MVP: one FastAPI backend, one
-Next.js frontend, one SQLite database, and a standalone `ml/` pipeline that
-writes artifacts consumed by the backend at inference time. No
+Streamlit frontend, one SQLite database, and a standalone `ml/` pipeline
+that writes artifacts consumed by the backend at inference time. No
 microservices, message queues, or distributed infrastructure — deliberately,
 to keep the system understandable and reproducible within a college
 project scope. See README.md § 16 for what a production version would add.
 
 ```
-┌──────────────┐      HTTP/JSON      ┌───────────────┐
-│  apps/web     │ ─────────────────▶ │  apps/api      │
-│  Next.js      │ ◀───────────────── │  FastAPI       │
-│  (9 pages)    │                     └──────┬────────┘
+┌──────────────┐   Python calls      ┌───────────────┐
+│ streamlit_app │ ─────────────────▶ │  apps/api      │
+│  Streamlit    │ ◀───────────────── │  FastAPI       │
+│  (9 pages)    │   (server-side)     └──────┬────────┘
 └──────────────┘                            │
                                               │ reads at inference time
                               ┌───────────────┼───────────────┐
@@ -69,14 +69,22 @@ Two generations of models coexist, deliberately:
 | `GET /api/v1/recommendations/{id}/explanation` | regenerated from stored evidence |
 | `POST /api/v1/recommendations/{id}/feedback` | like/dislike/skip/save/replay/hide |
 
-## Frontend (`apps/web`)
+## Frontend (`streamlit_app`)
 
-Next.js 16 App Router + TypeScript + Tailwind v4 + Recharts + Lucide.
-9 pages (Landing, Dashboard, Listening DNA, Personality, Persona, Current
-State, Recommendations, Taste Evolution, About). `lib/user-context.tsx`
-holds the selected demo listener (no auth in this MVP — see README § 15);
-`lib/api.ts` + `lib/types.ts` are the single typed client surface, mirrored
-1:1 against the backend Pydantic schemas.
+Streamlit (native multipage app, `pages/` directory) + Plotly for charts.
+9 pages (Home, Dashboard, Listening DNA, Personality, Persona, Current
+State, Recommendations, Taste Evolution, About). `lib/state.py`'s
+`render_user_picker()` holds the selected demo listener in
+`st.session_state` (no auth in this MVP — see README § 15); `lib/api.py`
+is the single client surface, one function per backend endpoint. Because
+Streamlit executes each page's Python server-side, API calls happen from
+the Streamlit process itself (`RESONA_API_URL`, defaults to
+`http://localhost:8000`, or `http://api:8000` under Docker Compose) rather
+than from the browser — no CORS exposure of the API to the client.
+
+Originally built as a Next.js + TypeScript + Tailwind + Recharts app
+(Phase 6); replaced with this Streamlit version by explicit request. The
+backend and its contract were untouched by the swap.
 
 ## ML pipeline (`ml/`)
 

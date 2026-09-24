@@ -8,7 +8,7 @@ services:
     environment:
       - ENVIRONMENT=development
       - DATABASE_URL=sqlite:///./resona.db
-      - CORS_ORIGINS=["http://localhost:3000"]
+      - CORS_ORIGINS=["http://localhost:8501"]
     volumes:
       # Live code edits without a rebuild.
       - ./apps/api/app:/resona/apps/api/app
@@ -19,17 +19,15 @@ services:
       - ./models:/resona/models:ro
       - ./data:/resona/data:ro
 
-  web:
+  streamlit:
     build:
       context: .
-      dockerfile: apps/web/Dockerfile
+      dockerfile: streamlit_app/Dockerfile
     ports:
-      - "3000:3000"
+      - "8501:8501"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - RESONA_API_URL=http://api:8000
     depends_on:
       - api
     volumes:
-      - ./apps/web:/app
-      - /app/node_modules
-      - /app/.next
+      - ./streamlit_app:/app

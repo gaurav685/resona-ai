@@ -43,7 +43,7 @@ User → Listening Data → Preprocessing → Listening DNA → Personality Mode
   → User Feedback → Updated Recommendations
 ```
 
-- **Frontend**: Next.js 16 + TypeScript + Tailwind + Recharts + Lucide (9 pages)
+- **Frontend**: Streamlit + Plotly (9 pages) — a lightweight Python dashboard over the same API
 - **Backend**: FastAPI + Pydantic + SQLAlchemy + SQLite
 - **ML**: pandas/NumPy/scikit-learn/XGBoost + PyTorch (GPU-aware) + SHAP
 
@@ -52,8 +52,8 @@ Full system design: [ARCHITECTURE.md](./ARCHITECTURE.md).
 ```
 resona-ai/
 ├── apps/
-│   ├── web/            Next.js + TypeScript + Tailwind frontend (9 pages)
 │   └── api/             FastAPI + SQLAlchemy + SQLite backend
+├── streamlit_app/         Streamlit + Plotly frontend (9 pages)
 ├── ml/
 │   ├── features/         Listening DNA, current-context, taste-evolution
 │   ├── personality/       Big Five trait models (classical + PyTorch)
@@ -66,7 +66,7 @@ resona-ai/
 │   └── samples/            small committed samples for reproducibility
 ├── models/                 trained model artifacts (binaries gitignored; metrics JSON/CSV kept)
 ├── scripts/                 dataset download/validate/process scripts
-├── tests/                   backend + ML tests (98 total)
+├── tests/                   backend + ML + Streamlit-page tests (107 total)
 └── docker-compose.yml
 ```
 
@@ -158,24 +158,23 @@ that's stated, not smoothed over. Full detail: [EVALUATION.md](./EVALUATION.md).
 
 ## 12. Screenshots
 
-_Not included in this submission — capture via `npm run dev` (frontend) +
-`uvicorn` (backend) running together locally, then screenshot the 9 pages
-listed in § 6/Architecture. (The sandboxed environment this MVP was built
-in had no connected browser to capture screenshots automatically.)_
+_Not included in this submission — capture via `streamlit run streamlit_app/Home.py`
+(frontend) + `uvicorn` (backend) running together locally, then screenshot
+the 9 pages listed in § 6/Architecture. (The sandboxed environment this MVP
+was built in had no connected browser to capture screenshots automatically.)_
 
 ## 13. Installation
 
-**Prerequisites**: Python 3.11+, Node.js 20+, (optional) CUDA-capable GPU.
+**Prerequisites**: Python 3.11+, (optional) CUDA-capable GPU.
 
 ```bash
 git clone <this-repo>
 cd resona-ai
 python -m venv .venv
 source .venv/Scripts/activate   # or .venv\Scripts\activate on Windows PowerShell
-pip install -r apps/api/requirements.txt -r ml/requirements.txt
+pip install -r apps/api/requirements.txt -r ml/requirements.txt -r streamlit_app/requirements.txt
 # GPU PyTorch (optional — CPU wheel installs automatically as a dependency
 # otherwise): pip install torch --index-url https://download.pytorch.org/whl/cu126
-cd apps/web && npm install && cd ../..
 cp .env.example .env
 ```
 
@@ -202,7 +201,7 @@ python ml/recommendation/evaluate.py
 cd apps/api && uvicorn app.main:app --reload   # http://localhost:8000
 
 # Frontend (separate terminal)
-cd apps/web && npm run dev                      # http://localhost:3000
+cd streamlit_app && streamlit run Home.py       # http://localhost:8501
 
 # Or both via Docker (after the pipeline above has produced models/ and data/processed/)
 docker compose up --build
@@ -211,8 +210,7 @@ docker compose up --build
 Tests:
 
 ```bash
-pytest                              # backend + ML, 98 tests
-cd apps/web && npm run lint && npx tsc --noEmit && npm run build
+pytest                              # backend + ML + Streamlit pages, 107 tests
 ```
 
 ## 15. Limitations

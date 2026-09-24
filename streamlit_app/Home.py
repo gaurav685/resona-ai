@@ -1,0 +1,74 @@
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import streamlit as st
+
+from lib.state import render_user_picker
+
+st.set_page_config(page_title="Resona AI", page_icon="🎧", layout="wide")
+
+render_user_picker()
+
+st.title("🎧 Resona AI")
+st.subheader("Understand people through music.")
+
+st.markdown(
+    """
+Resona analyzes real listening behavior to estimate personality-related
+associations, discover listener personas, detect current listening
+context, and generate explainable, feedback-adaptive music
+recommendations — all backed by real datasets and models, with no
+fabricated numbers anywhere in the pipeline.
+
+> Personality outputs are **model-estimated associations**, not
+> psychological diagnoses. See `MODEL_CARD.md`.
+"""
+)
+
+st.markdown("### From listening data to a recommendation")
+cols = st.columns(4)
+steps = [
+    ("📊", "Listening Behavior", "Real events from the Last.fm 1K research dataset"),
+    ("🧠", "AI Intelligence", "Feature engineering, classical + neural models, clustering"),
+    ("🎭", "Personality + Context + Persona", "Model-estimated associations, session context, discovered clusters"),
+    ("✨", "Personalized Recommendations", "Hybrid scoring, explained and adaptive to feedback"),
+]
+for col, (icon, label, detail) in zip(cols, steps):
+    with col:
+        st.markdown(f"**{icon} {label}**")
+        st.caption(detail)
+
+st.divider()
+
+left, right = st.columns(2)
+with left:
+    st.markdown("### Why typical recommenders fall short")
+    st.markdown(
+        "- **Popularity bias** — most recommenders lean on what's already popular\n"
+        "- **No explanation** — \"because you listened to X\" is usually the whole story\n"
+        "- **Behavior only** — plays/skips treated as the complete picture, ignoring "
+        "context, personality signal, or discovery intent"
+    )
+with right:
+    st.markdown("### What Resona adds")
+    st.markdown(
+        "- **Context intelligence** — session-vs-baseline behavioral shift detection\n"
+        "- **Persona discovery** — unsupervised clustering, never hard-coded labels\n"
+        "- **Personality signal** — a real trained model, evaluated honestly (including "
+        "where it underperforms)\n"
+        "- **Full explainability** — every recommendation's evidence is stored and its "
+        "explanation is generated from that evidence, never guessed"
+    )
+
+st.divider()
+st.markdown(
+    "**Built on real research datasets**: Last.fm 1K (992 real users), the Beyond the "
+    "Big Five music-personality dataset (279 real research participants), the Million "
+    "Song Dataset, and DEAM. Every metric in this app is computed from these datasets "
+    "or the models trained on them — see the **Methodology** page for the full "
+    "breakdown, including honest limitations."
+)
+
+st.info("Use the sidebar to pick a demo listener, then explore the pages on the left.")

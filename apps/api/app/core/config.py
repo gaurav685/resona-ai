@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
     environment: str = "development"
     database_url: str = "sqlite:///./resona.db"
-    cors_origins: list[str] = ["http://localhost:3000"]
+    cors_origins: list[str] = ["http://localhost:8501"]
 
 
 settings = Settings()
